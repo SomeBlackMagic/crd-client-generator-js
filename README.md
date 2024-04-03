@@ -2,6 +2,15 @@
 
 It generates a typescript client based on `@kubernetes/client` custom objects client from a Kubernetes `CustomResourceDefinition`.
 
+
+## How to install
+```
+wget https://github.com/SomeBlackMagic/crd-client-generator-js/releases/latest/download/crd-client-generator-js-linux-amd64
+chmod +x crd-client-generator-js-linux-amd64
+mv crd-client-generator-js-linux-amd64 /usr/local/bin/crd-client-generator-js
+```
+
+
 ### Usage
 
 ```bash
