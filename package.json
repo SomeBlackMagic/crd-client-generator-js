@@ -12,7 +12,8 @@
   "dependencies": {
     "openapi-to-flowtype": "^0.9.1",
     "prettier": "^2.2.1",
-    "yaml": "^1.10.0"
+    "yaml": "^1.10.0",
+    "deepmerge": "^4.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
