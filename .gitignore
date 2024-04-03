@@ -1,1 +1,3 @@
 node_modules
+dist/*
+crd-client-generator-js

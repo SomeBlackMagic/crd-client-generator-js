@@ -1,0 +1,83 @@
+name: NodeJS build App
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+
+    - name: Install dependencies
+      run: yarn
+
+    - name: Run lint code
+      run: yarn run lint
+
+    - name: Compile application to binary
+      run: yarn run build
+
+    - name: Archive binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: helm-assistant-linux-amd64
+        path: helm-assistant
+
+  tests:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install kubectl and helm
+        run: |
+          KUBECTL_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+          HELM_VERSION=$(curl -Ls https://github.com/helm/helm/releases | grep 'href="/helm/helm/releases/tag/v3.[0-9]*.[0-9]*\"' | sed -E 's/.*\/helm\/helm\/releases\/tag\/(v[0-9\.]+)".*/\1/g' | head -1)
+          
+          sudo wget -q -O /usr/local/bin/kubectl https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl
+          sudo chmod +x /usr/local/bin/kubectl
+          kubectl --client=true version
+          
+          sudo wget -q https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
+          sudo chmod +x /usr/local/bin/helm
+          helm version
+          
+          helm repo add someblackmagic https://someblackmagic.github.io/helm-charts/
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+      
+      
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: helm-assistant-linux-amd64
+          path: .
+
+      - name: Start minikube
+        uses: medyagh/setup-minikube@master
+
+      - name: Try the cluster !
+        run: kubectl get pods -A
+
+      - name: Run test -> deploy_worker
+        run: |
+          chmod +x helm-assistant
+          export HELM_ASSISTANT_BIN_CMD="./helm-assistant"
+          export TESTS_PWD=$(pwd)/tests/
+          bash tests/deploy_worker.sh
+
+      - name: Run test -> deploy_job
+        run: |
+          chmod +x helm-assistant
+          export HELM_ASSISTANT_BIN_CMD="./helm-assistant"
+          export TESTS_PWD=$(pwd)/tests/
+          bash tests/deploy_job.sh

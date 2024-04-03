@@ -1,7 +1,7 @@
 import Generator from "openapi-to-flowtype/dist/Generator";
 import {
-  V1CustomResourceDefinition,
   V1beta1CustomResourceDefinition,
+  V1CustomResourceDefinition
 } from "@kubernetes/client-node";
 const YAML = require("yaml");
 const fs = require("fs");
